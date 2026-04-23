@@ -1,0 +1,4 @@
+# kube-prometheus-stack custom values
+# Install: helm install monitoring prometheus-community/kube-prometheus-stack -n monitoring --create-namespace -f values-override.yaml
+prometheus-node-exporter:
+  enabled: false  # WSL2 limitation - can't mount host filesystem
