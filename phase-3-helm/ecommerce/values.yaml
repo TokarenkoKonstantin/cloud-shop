@@ -1,0 +1,19 @@
+postgres:
+  image: postgres:16-alpine
+  password: postgres
+
+productService:
+  image: product-service
+  tag: "1.0"
+
+orderService:
+  image: order-service
+  tag: "1.0"
+
+userService:
+  image: user-service
+  tag: "1.0"
+
+frontend:
+  image: frontend
+  tag: "1.0"
