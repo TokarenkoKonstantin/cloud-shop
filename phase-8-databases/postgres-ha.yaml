@@ -1,0 +1,39 @@
+
+apiVersion: postgresql.cnpg.io/v1
+
+kind: Cluster
+
+metadata:
+
+  name: postgres-ha
+
+spec:
+
+  instances: 3
+
+  affinity:
+
+    podAntiAffinityType: required
+
+  storage:
+
+    size: 1Gi
+
+  postgresql:
+
+    parameters:
+
+      max_connections: "100"
+
+  bootstrap:
+
+    initdb:
+
+      database: appdb
+
+      owner: appuser
+
+      secret:
+
+        name: postgres-secret
+
