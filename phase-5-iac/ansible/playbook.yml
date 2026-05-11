@@ -1,0 +1,10 @@
+
+---
+- name: Setup VPS
+  hosts: vps
+  become: true
+  roles:
+    - nginx
+    - docker
+    - security
+    - monitoring
