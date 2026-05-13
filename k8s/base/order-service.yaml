@@ -16,7 +16,7 @@ spec:
       containers:
         - name: order-service
           image: ghcr.io/tokarenkokonstantin/order-service:ad465cc6a544075f9b1ed9b6565d129c70e3c7ed
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - containerPort: 8000
           env:

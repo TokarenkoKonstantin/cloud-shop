@@ -16,7 +16,7 @@ spec:
       containers:
         - name: product-service
           image: ghcr.io/tokarenkokonstantin/product-service:b99a0a6aa6a7c314443019dacf4c28b71ce85c4a
-          imagePullPolicy: Never
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
