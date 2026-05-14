@@ -1,0 +1,20 @@
+---
+- name: Cleanup Flannel CNI from all K8s nodes
+  hosts: k8s_nodes
+  become: true
+
+  tasks:
+    - name: Delete flannel.1 interface
+      command: ip link delete flannel.1
+      failed_when: false
+      changed_when: false
+
+    - name: Delete cni0 interface
+      command: ip link delete cni0
+      failed_when: false
+      changed_when: false
+
+    - name: Remove Flannel CNI config
+      file:
+        path: /etc/cni/net.d/10-flannel.conflist
+        state: absent

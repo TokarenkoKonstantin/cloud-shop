@@ -43,4 +43,5 @@ jobs:
           git config user.name "GitHub Actions"
           git add k8s/base/user-service.yaml
           git commit -m "ci: update user-service image to ${{ github.sha }}"
+          git pull --rebase
           git push

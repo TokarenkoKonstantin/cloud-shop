@@ -43,4 +43,5 @@ jobs:
           git config user.name "GitHub Actions"
           git add k8s/base/order-service.yaml
           git commit -m "ci: update order-service image to ${{ github.sha }}"
+          git pull --rebase
           git push

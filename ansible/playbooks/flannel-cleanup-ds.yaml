@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: flannel-cleanup
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: flannel-cleanup
+  template:
+    metadata:
+      labels:
+        app: flannel-cleanup
+    spec:
+      hostNetwork: true
+      tolerations:
+        - operator: Exists
+      containers:
+        - name: cleanup
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              ip link delete flannel.1 2>/dev/null || true
+              ip link delete cni0 2>/dev/null || true
+              rm -f /host/etc/cni/net.d/10-flannel.conflist
+              echo "Done on $(hostname)"
+              sleep infinity
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - name: cni-conf
+              mountPath: /host/etc/cni/net.d
+      volumes:
+        - name: cni-conf
+          hostPath:
+            path: /etc/cni/net.d

@@ -1,0 +1,43 @@
+---
+- name: Install GitLab CE on GitLab VM
+  hosts: gitlab
+  become: true
+  vars:
+    gitlab_external_url: "http://192.168.11.110"
+
+  tasks:
+    - name: Install dependencies
+      ansible.builtin.apt:
+        name:
+          - curl
+          - openssh-server
+          - ca-certificates
+          - tzdata
+          - perl
+        state: present
+        update_cache: true
+
+    - name: Add GitLab CE apt repository
+      ansible.builtin.shell:
+        cmd: curl -sS https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.deb.sh | bash
+      args:
+        creates: /etc/apt/sources.list.d/gitlab_gitlab-ce.list
+
+    - name: Install GitLab CE
+      ansible.builtin.apt:
+        name: gitlab-ce
+        state: present
+        update_cache: true
+      environment:
+        EXTERNAL_URL: "{{ gitlab_external_url }}"
+      timeout: 600
+
+    - name: Verify GitLab is running
+      ansible.builtin.command:
+        cmd: gitlab-ctl status
+      register: gitlab_status
+      changed_when: false
+
+    - name: Show GitLab status
+      ansible.builtin.debug:
+        msg: "{{ gitlab_status.stdout_lines }}"
