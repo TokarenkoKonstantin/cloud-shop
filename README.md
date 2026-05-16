@@ -138,6 +138,18 @@ kubectl get pods -A
 
 ---
 
+## Мониторинг — Grafana дашборды
+
+| Кластер | Node Exporter |
+|---------|--------------|
+| ![Cluster Overview](screenshots/grafana-cluster-overview.png) | ![Node Exporter](screenshots/grafana-node-exporter.png) |
+
+| CPU Usage | Dashboards |
+|-----------|------------|
+| ![CPU Usage](screenshots/grafana-cpu-usage.png) | ![Dashboards](screenshots/grafana-dashboard-list.png) |
+
+---
+
 ## Инфраструктура
 
 | Компонент | Детали |
