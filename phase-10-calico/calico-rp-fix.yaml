@@ -1,0 +1,41 @@
+# DaemonSet для исправления rp_filter на Ubuntu 22.04
+# Ubuntu по умолчанию устанавливает rp_filter=2, что блокирует IPIP трафик Calico
+# Этот DaemonSet запускается на всех нодах и устанавливает rp_filter=1
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: calico-rp-fix
+  namespace: kube-system
+  labels:
+    app: calico-rp-fix
+spec:
+  selector:
+    matchLabels:
+      app: calico-rp-fix
+  template:
+    metadata:
+      labels:
+        app: calico-rp-fix
+    spec:
+      hostNetwork: true
+      hostPID: true
+      tolerations:
+      - operator: Exists
+      initContainers:
+      - name: fix-rp-filter
+        image: busybox
+        securityContext:
+          privileged: true
+        command:
+        - sh
+        - -c
+        - |
+          echo "Setting rp_filter=1 on all interfaces..."
+          for iface in /proc/sys/net/ipv4/conf/*/rp_filter; do
+            echo 1 > "$iface"
+          done
+          echo "Done."
+      containers:
+      - name: pause
+        image: registry.k8s.io/pause:3.9
+
