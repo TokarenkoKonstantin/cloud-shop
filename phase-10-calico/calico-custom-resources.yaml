@@ -1,0 +1,21 @@
+# Calico v3.29.3 — Custom Resources
+# IPIP mode, pod CIDR 10.244.0.0/16 (совместимо с kubeadm default)
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  calicoNetwork:
+    ipPools:
+    - name: default-ipv4-pool
+      cidr: 10.244.0.0/16
+      encapsulation: IPIP
+      natOutgoing: Enabled
+      nodeSelector: all()
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  name: default
+spec: {}
+
