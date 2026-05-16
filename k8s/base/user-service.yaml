@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: ghcr.io/tokarenkokonstantin/user-service:8c894e4cac57f0354f8f191ce909ba0d63a10524
+          image: ghcr.io/tokarenkokonstantin/user-service:4a774d26bb36fece2043aadfc6ff3eed77fdad22
           imagePullPolicy: Always
           ports:
             - containerPort: 8000
