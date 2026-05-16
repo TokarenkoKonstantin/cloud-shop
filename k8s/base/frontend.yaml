@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: ghcr.io/tokarenkokonstantin/frontend:ee34bcf60b6c0c8dc42240d7bb4173c7b41482fe
+          image: ghcr.io/tokarenkokonstantin/frontend:4a774d26bb36fece2043aadfc6ff3eed77fdad22
           imagePullPolicy: Always
           ports:
             - containerPort: 80
