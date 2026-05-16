@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - 'phase-1-docker/applications/frontend/**'
+      - 'phase-01-docker/applications/frontend/**'
   workflow_dispatch:
 
 env:
@@ -32,7 +32,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v5
         with:
-          context: ./phase-1-docker/applications/frontend
+          context: ./phase-01-docker/applications/frontend
           push: true
           tags: ghcr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
 
