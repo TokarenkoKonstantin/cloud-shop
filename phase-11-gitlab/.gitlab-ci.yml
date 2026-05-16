@@ -1,0 +1,44 @@
+# GitLab CI/CD Pipeline — cloud-shop
+# Stages: lint → test → build → push to Container Registry
+# Runner: shell executor на Proxmox VE VM (Ubuntu 22.04)
+
+stages:
+  - lint
+  - test
+  - build
+
+variables:
+  IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  IMAGE_LATEST: $CI_REGISTRY_IMAGE:latest
+
+# ─── Lint ───────────────────────────────────────────────
+lint:
+  stage: lint
+  script:
+    - pip install flake8 --quiet
+    - python3 -m flake8 app.py --max-line-length=100
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ─── Test ───────────────────────────────────────────────
+test:
+  stage: test
+  script:
+    - pip install pytest pytest-cov --quiet
+    - python3 -m pytest test_app.py -v --cov=app --cov-report=term-missing
+  coverage: "/TOTAL.*\\s+(\\d+%)$/"
+  rules:
+    - if: $CI_COMMIT_BRANCH
+
+# ─── Build & Push ───────────────────────────────────────
+build:
+  stage: build
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build -t $IMAGE_TAG -t $IMAGE_LATEST .
+    - docker push $IMAGE_TAG
+    - docker push $IMAGE_LATEST
+    - echo "Image pushed: $IMAGE_TAG"
+  rules:
+    - if: $CI_COMMIT_BRANCH == "main"
+
