@@ -2,7 +2,8 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-init
-  namespace: ecommerce
+  labels:
+    {{- include "ecommerce.labels" . | nindent 4 }}
 data:
   init.sql: |
     CREATE DATABASE ecommerce_orders;

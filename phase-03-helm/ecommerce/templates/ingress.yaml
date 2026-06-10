@@ -1,11 +1,17 @@
+{{- if .Values.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ecommerce-ingress
-  namespace: ecommerce
+  labels:
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
+  ingressClassName: {{ .Values.ingress.className }}
   rules:
-    - http:
+    - {{- if .Values.ingress.host }}
+      host: {{ .Values.ingress.host }}
+      {{- end }}
+      http:
         paths:
           - path: /
             pathType: Prefix
@@ -13,4 +19,5 @@ spec:
               service:
                 name: frontend
                 port:
-                  number: 80
+                  number: {{ .Values.frontend.port }}
+{{- end }}

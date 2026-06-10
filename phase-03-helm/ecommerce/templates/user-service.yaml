@@ -2,9 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user-service
-  namespace: ecommerce
+  labels:
+    app: user-service
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.userService.replicas }}
   selector:
     matchLabels:
       app: user-service
@@ -12,28 +14,45 @@ spec:
     metadata:
       labels:
         app: user-service
+        {{- include "ecommerce.labels" . | nindent 8 }}
     spec:
       containers:
         - name: user-service
           image: {{ .Values.userService.image }}:{{ .Values.userService.tag }}
-          imagePullPolicy: Never
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.userService.port }}
           env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-secrets
+                  name: {{ include "ecommerce.postgresSecretName" . }}
                   key: database-url-users
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.userService.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.userService.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.userService.resources | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: user-service
-  namespace: ecommerce
+  labels:
+    app: user-service
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
   selector:
     app: user-service
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: {{ .Values.userService.port }}
+      targetPort: {{ .Values.userService.port }}

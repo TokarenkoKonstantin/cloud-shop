@@ -2,9 +2,11 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: order-service
-  namespace: ecommerce
+  labels:
+    app: order-service
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.orderService.replicas }}
   selector:
     matchLabels:
       app: order-service
@@ -12,28 +14,45 @@ spec:
     metadata:
       labels:
         app: order-service
+        {{- include "ecommerce.labels" . | nindent 8 }}
     spec:
       containers:
         - name: order-service
           image: {{ .Values.orderService.image }}:{{ .Values.orderService.tag }}
-          imagePullPolicy: Never
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           ports:
-            - containerPort: 8000
+            - containerPort: {{ .Values.orderService.port }}
           env:
             - name: DATABASE_URL
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-secrets
+                  name: {{ include "ecommerce.postgresSecretName" . }}
                   key: database-url-orders
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.orderService.port }}
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.orderService.port }}
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.orderService.resources | nindent 12 }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: order-service
-  namespace: ecommerce
+  labels:
+    app: order-service
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
   selector:
     app: order-service
   ports:
-    - port: 8000
-      targetPort: 8000
+    - port: {{ .Values.orderService.port }}
+      targetPort: {{ .Values.orderService.port }}

@@ -1,0 +1,16 @@
+Релиз {{ .Release.Name }} установлен в namespace {{ .Release.Namespace }}.
+
+Проверка состояния:
+  kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+{{- if .Values.ingress.enabled }}
+Доступ к магазину:
+  {{- if .Values.ingress.host }}
+  http://{{ .Values.ingress.host }}/
+  {{- else }}
+  http://<IP-адрес ingress-контроллера>/
+  {{- end }}
+{{- else }}
+Ingress выключен. Доступ через port-forward:
+  kubectl port-forward -n {{ .Release.Namespace }} svc/frontend 8080:{{ .Values.frontend.port }}
+{{- end }}

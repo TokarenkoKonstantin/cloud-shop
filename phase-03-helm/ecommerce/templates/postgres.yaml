@@ -2,21 +2,28 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
-  namespace: ecommerce
+  labels:
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: {{ .Values.postgres.storage }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
-  namespace: ecommerce
+  labels:
+    app: postgres
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
+  # Одна реплика осознанно: один PVC (RWO) + нет репликации на уровне БД.
+  # HA-вариант PostgreSQL в этом проекте — оператор CloudNativePG (phase-08).
   replicas: 1
+  strategy:
+    type: Recreate # два postgres на одном PVC одновременно — порча данных
   selector:
     matchLabels:
       app: postgres
@@ -24,23 +31,36 @@ spec:
     metadata:
       labels:
         app: postgres
+        {{- include "ecommerce.labels" . | nindent 8 }}
     spec:
       containers:
         - name: postgres
-          image: postgres:16-alpine
-          imagePullPolicy: Never
+          image: {{ .Values.postgres.image }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
           env:
             - name: POSTGRES_USER
-              value: postgres
+              value: {{ .Values.postgres.auth.username | quote }}
             - name: POSTGRES_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: ecommerce-secrets
+                  name: {{ include "ecommerce.postgresSecretName" . }}
                   key: postgres-password
             - name: POSTGRES_DB
               value: postgres
           ports:
             - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-U", "{{ .Values.postgres.auth.username }}"]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: 5432
+            initialDelaySeconds: 30
+            periodSeconds: 20
+          resources:
+            {{- toYaml .Values.postgres.resources | nindent 12 }}
           volumeMounts:
             - name: postgres-data
               mountPath: /var/lib/postgresql/data
@@ -58,7 +78,9 @@ apiVersion: v1
 kind: Service
 metadata:
   name: postgres
-  namespace: ecommerce
+  labels:
+    app: postgres
+    {{- include "ecommerce.labels" . | nindent 4 }}
 spec:
   selector:
     app: postgres
