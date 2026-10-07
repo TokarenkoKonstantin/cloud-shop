@@ -1,0 +1,43 @@
+# Вариант для отказоустойчивого стенда cluster-forge.
+# База (k8s/base) не меняется — здесь только отличия этого кластера.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - namespace.yaml
+  - ../../base
+
+# Несколько копий каждого сервиса: потеря ноды не останавливает магазин.
+replicas:
+  - name: frontend
+    count: 3
+  - name: product-service
+    count: 2
+  - name: order-service
+    count: 2
+  - name: user-service
+    count: 2
+
+patches:
+  # База больше не прибита к ноде: диск лежит на NFS и доступен с любого воркера.
+  - target:
+      kind: StatefulSet
+      name: postgres
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/nodeSelector
+
+  # Вход: Traefik вместо снятого с поддержки Ingress-NGINX, имя из зоны стенда.
+  - target:
+      kind: Ingress
+      name: ecommerce-ingress
+    patch: |-
+      - op: replace
+        path: /spec/ingressClassName
+        value: traefik
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: shop.apps.forge.lab
+      - op: replace
+        path: /spec/rules/0/host
+        value: shop.apps.forge.lab
