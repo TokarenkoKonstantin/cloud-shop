@@ -10,7 +10,7 @@ resources:
 # Несколько копий каждого сервиса: потеря ноды не останавливает магазин.
 replicas:
   - name: frontend
-    count: 3
+    count: 4
   - name: product-service
     count: 2
   - name: order-service
